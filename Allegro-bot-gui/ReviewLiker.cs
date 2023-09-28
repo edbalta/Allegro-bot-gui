@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Runtime.InteropServices;
 using System.Diagnostics;
+using System.Linq;
 
 namespace Allegro_bot_gui
 {
@@ -55,48 +56,56 @@ namespace Allegro_bot_gui
             {
                 CookieModel[] cookies = JsonConvert.DeserializeObject<List<CookieModel>>(File.ReadAllText("./Data/accounts.json")).ToArray();
                 var n = 1;
+                var items = checkedListBox1.Items.OfType<ReviewModel>().ToList();
+                var checkedItems = checkedListBox1.CheckedItems.OfType<ReviewModel>().ToList();
                 foreach (var cookie in cookies)
                 {
                     Console.Title = $"Account Index Currently Used: {n}";
                     for (var i = 0; i < review_id_state.Count; ++i)
                     {
                         var state = review_id_state[i];
-                        if (checkedListBox1.Items.Contains(state["body"]))
+                        
+                        if (items.Select(x => x.reviewId).Contains(state["review_id"]))
                         {
-                            if (checkedListBox1.CheckedItems.Contains(state["body"]))
+                            if (checkedItems.Select(x => x.reviewId).Contains(state["review_id"]))
                             {
                                 if (checkBox3.Checked)
                                 {
-                                    Thread.Sleep(Int32.Parse(textBox2.Text));
-
+                                    //Thread.Sleep(Int32.Parse(textBox2.Text));
+                                    await Task.Delay(Int32.Parse(textBox2.Text));
                                     LikeProcess(back, JsonConvert.SerializeObject(cookie), state["review_id"], checkBox2.Checked);
                                 }
                                 else
                                 {
-                                    var trd = new Thread(() => LikeProcess(back, JsonConvert.SerializeObject(cookie), state["review_id"], checkBox2.Checked));
-                                    threads.Add(trd);
-                                    trd.Start();
+                                    await Task.Run(() => LikeProcess(back, JsonConvert.SerializeObject(cookie), state["review_id"], checkBox2.Checked));
+                                    //var trd = new Thread(() => LikeProcess(back, JsonConvert.SerializeObject(cookie), state["review_id"], checkBox2.Checked));
+                                    //threads.Add(trd);
+                                    //trd.Start();
                                 }
                             }
                             else
                             {
                                 if (checkBox3.Checked)
                                 {
-                                    Thread.Sleep(Int32.Parse(textBox2.Text));
+                                    //Thread.Sleep(Int32.Parse(textBox2.Text));
+                                    await Task.Delay(Int32.Parse(textBox2.Text));
                                     DownProcess(back, JsonConvert.SerializeObject(cookie), state["review_id"], checkBox2.Checked);
                                 }
                                 else
                                 {
-                                    var trd = new Thread(() => DownProcess(back, JsonConvert.SerializeObject(cookie), state["review_id"], checkBox2.Checked));
-                                    threads.Add(trd);
-                                    trd.Start();
+                                    await Task.Run(() => DownProcess(back, JsonConvert.SerializeObject(cookie), state["review_id"], checkBox2.Checked));
+
+                                    //var trd = new Thread(() => DownProcess(back, JsonConvert.SerializeObject(cookie), state["review_id"], checkBox2.Checked));
+                                    //threads.Add(trd);
+                                    //trd.Start();
                                 }
                             }
                         }
                     }
                     if (checkBox3.Checked)
                     {
-                        Thread.Sleep((Int32.Parse(textBox1.Text)));
+                        await Task.Delay((Int32.Parse(textBox1.Text)));
+                        //Thread.Sleep((Int32.Parse(textBox1.Text)));
                     }
                     n++;
                 }
@@ -152,7 +161,8 @@ namespace Allegro_bot_gui
                     ReviewModel[] dictionaries = reviews.ToArray(); ;
                     for (var i = 0; i < dictionaries.Length; ++i)
                     {
-                        checkedListBox1.Items.Add(dictionaries[i].reviewBody, dictionaries[i].reviewState);
+                        var item = new ReviewModel(dictionaries[i].reviewId, dictionaries[i].reviewBody, dictionaries[i].reviewState);
+                        checkedListBox1.Items.Add(item, dictionaries[i].reviewState);
                         var id_state = new Dictionary<string, string>();
                         id_state["review_id"] = dictionaries[i].reviewId;
                         id_state["body"] = dictionaries[i].reviewBody;
@@ -168,7 +178,7 @@ namespace Allegro_bot_gui
             }
             else if (button1.Text == "Start/Next")
             {
-                ProcessStart();
+                await ProcessStart();
                 try
                 {
                     string[] products = File.ReadAllLines("./Data/products.txt");
@@ -234,12 +244,16 @@ namespace Allegro_bot_gui
         private void button8_Click(object sender, EventArgs e)
         {
             var review_states = new List<ReviewModel>();
+            var items = checkedListBox1.Items.OfType<ReviewModel>().ToList();
+            var checkedItems = checkedListBox1.CheckedItems.OfType<ReviewModel>().ToList();
+
             for (var i = 0; i < review_id_state.Count; ++i)
             {
                 var state = review_id_state[i];
-                if (checkedListBox1.Items.Contains(state["body"]))
+
+                if (items.Select(x => x.reviewId).Contains(state["review_id"]))
                 {
-                    if (checkedListBox1.CheckedItems.Contains(state["body"]))
+                    if (checkedItems.Select(x => x.reviewId).Contains(state["review_id"]))
                     {
                         var model = new ReviewModel();
                         model.reviewId = state["review_id"];
@@ -263,9 +277,9 @@ namespace Allegro_bot_gui
 
         private void button9_Click(object sender, EventArgs e)
         {
-            for (var i = 0; i < checkedListBox1.CheckedItems.Count; ++i)
+            foreach (var item in checkedListBox1.CheckedItems.OfType<ReviewModel>().ToList())
             {
-                checkedListBox1.Items.Remove(checkedListBox1.CheckedItems[i]);
+                checkedListBox1.Items.Remove(item);
             }
         }
 

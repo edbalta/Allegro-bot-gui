@@ -5,6 +5,8 @@ using System.IO;
 using Newtonsoft.Json;
 using System.Threading;
 using System.Linq;
+using System.Threading.Tasks;
+using System.Web.Hosting;
 
 namespace Allegro_bot_gui
 {
@@ -85,14 +87,15 @@ namespace Allegro_bot_gui
             return modifiedUsername;
         }
 
-        public void LikeProcess(string review_id, string cookie, bool use_proxy)
+        public async void LikeProcess(string review_id, string cookie, bool use_proxy)
         {
             string proxy = null;
             if (use_proxy)
             {
                 proxy = proxies[random.Next(proxies.Length)];
             }
-            new Thread(() => ProcessParser($"https://edge.allegro.pl/product-reviews/{review_id}/vote/up", cookie, proxy)).Start();
+            await Task.Run(() => ProcessParser($"https://edge.allegro.pl/product-reviews/{review_id}/vote/up", cookie, proxy));
+            //new Thread(() => ProcessParser($"https://edge.allegro.pl/product-reviews/{review_id}/vote/up", cookie, proxy)).Start();
         }
 
         public void UnpaidOrderProcess(string product_id, string cookie, bool use_proxy, string delivery_method, bool apt)
@@ -278,7 +281,7 @@ namespace Allegro_bot_gui
             mprint.SPrint($"Added view on {product_url}.{resp.ToString()}");
             request.Dispose();    
         }
-        public void DownProcess(string review_id, string cookie, bool use_proxy)
+        public async void DownProcess(string review_id, string cookie, bool use_proxy)
         {
             string proxy = null;
             if (use_proxy)
@@ -286,7 +289,8 @@ namespace Allegro_bot_gui
                 string[] proxies = File.ReadAllLines("./Data/proxies.txt");
                 proxy = proxies[random.Next(proxies.Length)];
             }
-            new Thread(() => ProcessParser($"https://edge.allegro.pl/product-reviews/{review_id}/vote/down", cookie, proxy)).Start();
+            await Task.Run(() => ProcessParser($"https://edge.allegro.pl/product-reviews/{review_id}/vote/down", cookie, proxy));
+            //new Thread(() => ProcessParser($"https://edge.allegro.pl/product-reviews/{review_id}/vote/down", cookie, proxy)).Start();
         }
         public void FavouriteProcess(string product_url, string cookie, bool use_proxy)
         {

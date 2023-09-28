@@ -15,6 +15,21 @@ namespace Allegro_bot_gui
         public string reviewId;
         public string reviewBody;
         public bool reviewState;
+        public ReviewModel(string reviewId, string reviewBody, bool reviewState)
+        {
+            this.reviewId = reviewId;
+            this.reviewBody = reviewBody;
+            this.reviewState = reviewState;
+        }
+        public ReviewModel()
+        {
+            
+        }
+        public override string ToString()
+        {
+            return reviewBody;
+        }
+
     }
     public class ReviewScrapper
     {
