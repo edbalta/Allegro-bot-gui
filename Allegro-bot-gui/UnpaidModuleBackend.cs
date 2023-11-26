@@ -6,6 +6,7 @@ using System.IO;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Text;
+using System.Xml.Linq;
 
 namespace Allegro_bot_gui
 {
@@ -24,7 +25,7 @@ namespace Allegro_bot_gui
         public string[] femaleNames = File.ReadAllLines("./Data/female_names.txt");
         public string[] maleNames = File.ReadAllLines("./Data/males_names.txt");
         public string[] maleSurnames = File.ReadAllLines("./Data/males_surnames.txt");
-        
+
         public UnpaidModuleBackend()
         {
             LoadAddresses();
@@ -44,8 +45,8 @@ namespace Allegro_bot_gui
             try
             {
                 CookieModel cookie_json = JsonConvert.DeserializeObject<CookieModel>(cookie);
-                QeppoLogin2 qeppologin2 = JsonConvert.DeserializeObject<QeppoLogin2>(System.Web.HttpUtility.UrlDecode(cookie_json.qeppo_login2));
-                string account_email = qeppologin2.username;
+                //QeppoLogin2 qeppologin2 = JsonConvert.DeserializeObject<QeppoLogin2>(System.Web.HttpUtility.UrlDecode(cookie_json.qeppo_login2));
+                string account_email = cookie_json.QXLSESSID;
                 if (suspended_accounts.Contains(account_email))
                 {
                     mprint.FPrint($"(0%) This account is suspended. Account: {account_email}");
@@ -88,10 +89,12 @@ namespace Allegro_bot_gui
                             json_obj.deliveries[0].delivery.generalDelivery = null;
                         }
                         string payment_id = SendPurchaseRequest(purchase_id, json_obj, cookie);
+
+                        //var buyerId = (string)json_obj.buyer.id;
                         if (payment_id != null)
                         {
                             mprint.SPrint($"(70%) Added delivery method. Account: {account_email}");
-                            UpdateUser(qeppologin2.id.ToString(), addy, name, num, cookie);
+                            //UpdateUser(buyerId, addy, name, num, cookie);
                             FinishRequests(payment_id, purchase_id, cookie, product_id, account_email);
                         }
                         else
@@ -108,12 +111,15 @@ namespace Allegro_bot_gui
                         File.WriteAllText("./logs/suspended_accounts.json", JsonConvert.SerializeObject(suspended_accounts));
                     }
 
-                } else
+                }
+                else
                 {
                     mprint.FPrint(buy_now_response);
                 }
                 return null;
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 mprint.FPrint(ex.ToString());
                 return null;
             }
@@ -143,7 +149,8 @@ namespace Allegro_bot_gui
                     {
                         mprint.FPrint($"(FAIL) Status: {resp.StatusCode}, text: {resp.ToString()} - Failure to create order");
                     }
-                } else
+                }
+                else
                 {
                     mprint.FPrint($"(FAIL) Status: {resp.StatusCode}, text: {resp.ToString()} - Failure to create order");
                 }
@@ -231,14 +238,14 @@ namespace Allegro_bot_gui
         }
         public dynamic GetGeneralDeliveryPoint(dynamic itemsList)
         {
-                foreach (dynamic x in itemsList)
+            foreach (dynamic x in itemsList)
+            {
+                if (x["deliveryOption"]["name"] == "Paczkomat InPost")
                 {
-                    if (x["deliveryOption"]["name"] == "Paczkomat InPost")
-                    {
-                        return x["deliveryOption"]["pickupPoint"];
-                    }
+                    return x["deliveryOption"]["pickupPoint"];
                 }
-                return null;
+            }
+            return null;
         }
 
         public dynamic GetDeliveryPoint(List<dynamic> deliveryList, string deliveryName)
@@ -249,7 +256,7 @@ namespace Allegro_bot_gui
                 {
                     if (x["deliveryMethod"]["name"] == "Allegro Paczkomaty InPost")
                     {
-                          return x;
+                        return x;
                     }
                 }
             }
@@ -259,7 +266,7 @@ namespace Allegro_bot_gui
                 {
                     if (x["deliveryMethod"]["name"] == "Courier delivery")
                     {
-                            return x;
+                        return x;
                     }
                 }
             }
@@ -267,11 +274,11 @@ namespace Allegro_bot_gui
             {
                 foreach (dynamic x in deliveryList)
                 {
-                        if (x["deliveryMethod"]["name"] == "Allegro miniKurier24 InPost pobranie")
-                        {
-                            return x;
-                        }
-                    
+                    if (x["deliveryMethod"]["name"] == "Allegro miniKurier24 InPost pobranie")
+                    {
+                        return x;
+                    }
+
                 }
             }
             return null;
@@ -386,7 +393,7 @@ namespace Allegro_bot_gui
             {
                 request.IgnoreProtocolErrors = true;
                 request.AddHeader("Host", "edge.allegro.pl");
-                request.AddHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:105.0) Gecko/20100101 Firefox/105.0");
+                request.AddHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.6045.159 Safari/537.36");
                 request.AddHeader("Accept", "application/vnd.allegro.internal.v1+json");
                 request.AddHeader("Accept-Language", "en-US");
                 request.AddHeader("Accept-Encoding", "gzip, deflate, br");
@@ -398,22 +405,29 @@ namespace Allegro_bot_gui
                 request.AddHeader("Sec-Fetch-Mode", "cors");
                 request.AddHeader("Sec-Fetch-Site", "same-site");
                 request.AddHeader("Cookie", utility.ConvertCookieString(cookie));
-                request.AddHeader("TE", "trailers");
-                string json = @"{
-            ""offer"": {
-                ""id"": """ + productId + @""",
-                ""quantity"": 1,
-                ""navigationCategory"": {
-                    ""id"": ""321347"",
-                    ""treeName"": ""navigation-pl""
-                }
-            }
-        }";
 
-                HttpResponse response = request.Post("https://edge.allegro.pl/transaction-entry/buy-now", json, "application/vnd.allegro.internal.v1+json");
+                var json = new
+                {
+                    offer = new
+                    {
+                        id = productId,
+                        quantity = 1,
+
+                        navigationCategory = new
+                        {
+                            id = "321347",
+                            treeName = "navigation-pl"
+
+                        }
+                    }
+                };
+                string jsonString = JsonConvert.SerializeObject(json);
+
+                HttpResponse response = request.Post("https://edge.allegro.pl/transaction-entry/buy-now", jsonString, "application/vnd.allegro.internal.v1+json");
+
                 if (response.StatusCode == HttpStatusCode.NoContent ||
-    response.StatusCode == HttpStatusCode.OK ||
-    response.StatusCode == HttpStatusCode.Created)
+                    response.StatusCode == HttpStatusCode.OK ||
+                    response.StatusCode == HttpStatusCode.Created)
                 {
                     return response.ToString();
                 }

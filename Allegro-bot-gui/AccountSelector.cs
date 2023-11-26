@@ -20,25 +20,22 @@ namespace Allegro_bot_gui
         private void button1_Click(object sender, EventArgs e)
         {
             CookieModel[] cookies = JsonConvert.DeserializeObject<List<CookieModel>>(File.ReadAllText("./Data/accounts.json")).ToArray();
-            List<CookieModel> cookies_unpaid = new List<CookieModel>(); 
+            List<CookieModel> cookies_unpaid = new List<CookieModel>();
             foreach (var cookie in cookies)
             {
-                if (cookie.qeppo_login2 != null)
+                var email = cookie.userIdentity;
+                var account_email = email;
+                if (checkedListBox1.CheckedItems.Contains(account_email))
                 {
-                    var email = JsonConvert.DeserializeObject<QeppoLogin2>(HttpUtility.UrlDecode(cookie.qeppo_login2));
-                    var account_email = account_orignal_email[email.username];
-                    if (checkedListBox1.CheckedItems.Contains(account_email))
-                    {
-                        cookies_unpaid.Add(cookie);
-                    }
+                    cookies_unpaid.Add(cookie);
                 }
             }
-            File.WriteAllText("./BotData/accounts_unpaid.json", JsonConvert.SerializeObject(cookies_unpaid)); 
+            File.WriteAllText("./BotData/accounts_unpaid.json", JsonConvert.SerializeObject(cookies_unpaid));
             this.Close();
         }
         public string buildContent(string msg, List<string> offers)
         {
-            foreach(var offer in offers)
+            foreach (var offer in offers)
             {
                 msg += $"{offer}, ";
             }
@@ -47,30 +44,29 @@ namespace Allegro_bot_gui
         private void AccountSelector_Load(object sender, EventArgs e)
         {
             CookieModel[] cookies = JsonConvert.DeserializeObject<List<CookieModel>>(File.ReadAllText("./Data/accounts.json")).ToArray();
-            foreach (var cookie in cookies) 
+            foreach (var cookie in cookies)
             {
-                if (cookie.qeppo_login2 != null)
-                {
-                    var email = JsonConvert.DeserializeObject<QeppoLogin2>(HttpUtility.UrlDecode(cookie.qeppo_login2)).username;
-                    if (account_offers_done.ContainsKey(email))
-                    {
-                        var string_text = $"{email}, Offers Done: ";
-                        var content_modified = buildContent(string_text, account_offers_done[email]);
-                        account_orignal_email[email] = content_modified;
-                        checkedListBox1.Items.Add(content_modified);
-                    } else {
-                        account_orignal_email[email] = email;
-                        checkedListBox1.Items.Add(email);
-                    }
+                //var email2 = JsonConvert.DeserializeObject<QeppoLogin2>(HttpUtility.UrlDecode(cookie.qeppo_login2));
 
+                var email = cookie.QXLSESSID;
+                if (account_offers_done.ContainsKey(email))
+                {
+                    var string_text = $"{email}, Offers Done: ";
+                    var content_modified = buildContent(string_text, account_offers_done[email]);
+                    account_orignal_email[email] = content_modified;
+                    checkedListBox1.Items.Add(content_modified);
+                }
+                else
+                {
+                    account_orignal_email[email] = email;
+                    checkedListBox1.Items.Add(email);
                 }
             }
-
         }
 
         private void button5_Click(object sender, EventArgs e)
         {
-            for(var i = 0; i<checkedListBox1.Items.Count; ++i)
+            for (var i = 0; i < checkedListBox1.Items.Count; ++i)
             {
                 checkedListBox1.SetItemChecked(i, true);
             }
