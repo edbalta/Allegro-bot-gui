@@ -20,7 +20,7 @@ namespace Allegro_bot_gui
     public partial class UnpaidOrders : Form
     {
         public List<Thread> threads = new List<Thread>();
-        public Dictionary<string, string> products_ids = new Dictionary<string, string>();  
+        public Dictionary<string, string> products_ids = new Dictionary<string, string>();
         public Dictionary<string, List<string>> account_offers_done = JsonConvert.DeserializeObject<Dictionary<string, List<string>>>(File.ReadAllText("./BotData/accounts_offers.json"));
         public DeliverySelectorModel model_delivery = JsonConvert.DeserializeObject<DeliverySelectorModel>(File.ReadAllText("./BotData/accounts_unpaid_delivery.json"));
         public DeliverySelectorModel model = JsonConvert.DeserializeObject<DeliverySelectorModel>(File.ReadAllText("./BotData/accounts_unpaid_delivery.json"));
@@ -35,14 +35,16 @@ namespace Allegro_bot_gui
         public string GetDeliveryMethod(DeliverySelectorModel model)
         {
             var delivery_str = new[] { "DPD", "Paczkomaty InPost", "Kurier InPost pobranie" }[new Random().Next(3)];
-            if (delivery_str == "DPD") {
+            if (delivery_str == "DPD")
+            {
                 if (model.dpd_accounts == dpd_accounts)
                 {
                     return GetDeliveryMethod(model);
                 }
                 dpd_accounts++;
                 return "DPD";
-            } else if (delivery_str == "Kurier InPost pobranie")
+            }
+            else if (delivery_str == "Kurier InPost pobranie")
             {
                 if (model.inpost_probain_accounts == kurierProbaineAccounts)
                 {
@@ -85,168 +87,45 @@ namespace Allegro_bot_gui
                     Console.Title = $"Account index: {n}";
                     ++n;
                     var delivery_method = GetDeliveryMethod(model);
-                    if (cookie.qeppo_login2 != null)
+                    var account_email = JsonConvert.DeserializeObject<QeppoLogin2>(System.Web.HttpUtility.UrlDecode(cookie.qeppo_login2)).username;
+                    if (use_intervals.Checked)
                     {
-                        var account_email = JsonConvert.DeserializeObject<QeppoLogin2>(System.Web.HttpUtility.UrlDecode(cookie.qeppo_login2)).username;
-                        if (use_intervals.Checked)
-                        {
-                            if (rand_intervals.Checked)
-                            {
-                                if (settings.dont_make_order)
-                                {
-                                    Thread.Sleep(GetIntervalValue());
-                                    
-                                    if (settings.add_views)
-                                    {
-                                        back.ViewProcess(product_url, JsonConvert.SerializeObject(cookie), use_proxies.Checked);
-                                    }
-                                    if (settings.add_to_basket)
-                                    {
-                                        back.AddToBasketProcess(product_url, JsonConvert.SerializeObject(cookie), use_proxies.Checked);
-                                    }
-                                    if (settings.favorite_offer)
-                                    {
-                                        back.FavouriteProcess(product_url, JsonConvert.SerializeObject(cookie), use_proxies.Checked);
-                                    }
-                                }
-                                else
-                                {
-                                    Thread.Sleep(GetIntervalValue());
-                                    
-                                    if (settings.add_views)
-                                    {
-                                        back.ViewProcess(product_url, JsonConvert.SerializeObject(cookie), use_proxies.Checked);
-                                    }
-                                    if (settings.add_to_basket)
-                                    {
-                                        back.AddToBasketProcess(product_url, JsonConvert.SerializeObject(cookie), use_proxies.Checked);
-                                    }
-                                    if (settings.favorite_offer)
-                                    {
-                                        back.FavouriteProcess(product_url, JsonConvert.SerializeObject(cookie), use_proxies.Checked);
-                                    }
-                                    back.UnpaidOrderProcess(product_url, JsonConvert.SerializeObject(cookie), use_proxies.Checked, delivery_method, apt.Checked);
-                                    if (account_offers_done.ContainsKey(account_email))
-                                    {
-                                        if (account_offers_done[account_email].Contains(product_id))
-                                        {
-
-                                        }
-                                        else
-                                        {
-                                            account_offers_done[account_email].Add(product_id);
-                                        }
-                                    }
-                                    else
-                                    {
-                                        account_offers_done[account_email] = new List<string> { product_id };
-
-                                    }
-                                }
-                            }
-                            else
-                            {
-                                if (settings.dont_make_order)
-                                {
-                                    Thread.Sleep(Int32.Parse(interval_time.Text));
-                                    
-                                    if (settings.add_views)
-                                    {
-                                        back.ViewProcess(product_url, JsonConvert.SerializeObject(cookie), use_proxies.Checked);
-                                    }
-                                    if (settings.add_to_basket)
-                                    {
-                                        back.AddToBasketProcess(product_url, JsonConvert.SerializeObject(cookie), use_proxies.Checked);
-                                    }
-                                    if (settings.favorite_offer)
-                                    {
-                                        back.FavouriteProcess(product_url, JsonConvert.SerializeObject(cookie), use_proxies.Checked);
-                                    }
-
-                                }
-                                else
-                                {
-                                    Thread.Sleep(Int32.Parse(interval_time.Text));
-                                    
-                                    if (settings.add_views)
-                                    {
-                                        back.ViewProcess(product_url, JsonConvert.SerializeObject(cookie), use_proxies.Checked);
-                                    }
-                                    if (settings.add_to_basket)
-                                    {
-                                        back.AddToBasketProcess(product_url, JsonConvert.SerializeObject(cookie), use_proxies.Checked);
-                                    }
-                                    if (settings.favorite_offer)
-                                    {
-                                        back.FavouriteProcess(product_url, JsonConvert.SerializeObject(cookie), use_proxies.Checked);
-                                    }
-                                    back.UnpaidOrderProcess(product_url, JsonConvert.SerializeObject(cookie), use_proxies.Checked, delivery_method, apt.Checked);
-                                    if (account_offers_done.ContainsKey(account_email))
-                                    {
-                                        if (account_offers_done[account_email].Contains(product_id))
-                                        {
-
-                                        }
-                                        else
-                                        {
-                                            account_offers_done[account_email].Add(product_id);
-                                        }
-                                    }
-                                    else
-                                    {
-                                        account_offers_done[account_email] = new List<string> { product_id };
-                                    }
-                                }
-                            }
-                        }
-                        else
+                        if (rand_intervals.Checked)
                         {
                             if (settings.dont_make_order)
                             {
-                                
+                                Thread.Sleep(GetIntervalValue());
+
                                 if (settings.add_views)
                                 {
-                                    var trd2 = new Thread(() => back.ViewProcess(product_url, JsonConvert.SerializeObject(cookie), use_proxies.Checked));
-                                    trd2.Start();
-                                    threads.Add(trd2);
+                                    back.ViewProcess(product_url, JsonConvert.SerializeObject(cookie), use_proxies.Checked);
                                 }
                                 if (settings.add_to_basket)
                                 {
-                                    var trd2 = new Thread(() => back.AddToBasketProcess(product_url, JsonConvert.SerializeObject(cookie), use_proxies.Checked));
-                                    trd2.Start();
-                                    threads.Add(trd2);
+                                    back.AddToBasketProcess(product_url, JsonConvert.SerializeObject(cookie), use_proxies.Checked);
                                 }
                                 if (settings.favorite_offer)
                                 {
-                                    var trd1 = new Thread(() => back.FavouriteProcess(product_url, JsonConvert.SerializeObject(cookie), use_proxies.Checked));
-                                    trd1.Start();
-                                    threads.Add(trd1);
+                                    back.FavouriteProcess(product_url, JsonConvert.SerializeObject(cookie), use_proxies.Checked);
                                 }
                             }
                             else
                             {
-                                
+                                Thread.Sleep(GetIntervalValue());
+
                                 if (settings.add_views)
                                 {
-                                    var trd2 = new Thread(() => back.ViewProcess(product_url, JsonConvert.SerializeObject(cookie), use_proxies.Checked));
-                                    trd2.Start();
-                                    threads.Add(trd2);
+                                    back.ViewProcess(product_url, JsonConvert.SerializeObject(cookie), use_proxies.Checked);
                                 }
                                 if (settings.add_to_basket)
                                 {
-                                    var trd2 = new Thread(() => back.AddToBasketProcess(product_url, JsonConvert.SerializeObject(cookie), use_proxies.Checked));
-                                    trd2.Start();
-                                    threads.Add(trd2);
+                                    back.AddToBasketProcess(product_url, JsonConvert.SerializeObject(cookie), use_proxies.Checked);
                                 }
                                 if (settings.favorite_offer)
                                 {
-                                    var trd1 = new Thread(() => back.FavouriteProcess(product_url, JsonConvert.SerializeObject(cookie), use_proxies.Checked));
-                                    trd1.Start();
-                                    threads.Add(trd1);
+                                    back.FavouriteProcess(product_url, JsonConvert.SerializeObject(cookie), use_proxies.Checked);
                                 }
-                                var trd = new Thread(() => back.UnpaidOrderProcess(product_url, JsonConvert.SerializeObject(cookie), use_proxies.Checked, delivery_method, apt.Checked));
-                                trd.Start();
-                                threads.Add(trd);
+                                back.UnpaidOrderProcess(product_url, JsonConvert.SerializeObject(cookie), use_proxies.Checked, delivery_method, apt.Checked);
                                 if (account_offers_done.ContainsKey(account_email))
                                 {
                                     if (account_offers_done[account_email].Contains(product_id))
@@ -263,128 +142,193 @@ namespace Allegro_bot_gui
                                     account_offers_done[account_email] = new List<string> { product_id };
 
                                 }
+                            }
+                        }
+                        else
+                        {
+                            if (settings.dont_make_order)
+                            {
+                                Thread.Sleep(Int32.Parse(interval_time.Text));
+
+                                if (settings.add_views)
+                                {
+                                    back.ViewProcess(product_url, JsonConvert.SerializeObject(cookie), use_proxies.Checked);
+                                }
+                                if (settings.add_to_basket)
+                                {
+                                    back.AddToBasketProcess(product_url, JsonConvert.SerializeObject(cookie), use_proxies.Checked);
+                                }
+                                if (settings.favorite_offer)
+                                {
+                                    back.FavouriteProcess(product_url, JsonConvert.SerializeObject(cookie), use_proxies.Checked);
+                                }
+
+                            }
+                            else
+                            {
+                                Thread.Sleep(Int32.Parse(interval_time.Text));
+
+                                if (settings.add_views)
+                                {
+                                    back.ViewProcess(product_url, JsonConvert.SerializeObject(cookie), use_proxies.Checked);
+                                }
+                                if (settings.add_to_basket)
+                                {
+                                    back.AddToBasketProcess(product_url, JsonConvert.SerializeObject(cookie), use_proxies.Checked);
+                                }
+                                if (settings.favorite_offer)
+                                {
+                                    back.FavouriteProcess(product_url, JsonConvert.SerializeObject(cookie), use_proxies.Checked);
+                                }
+                                back.UnpaidOrderProcess(product_url, JsonConvert.SerializeObject(cookie), use_proxies.Checked, delivery_method, apt.Checked);
+                                if (account_offers_done.ContainsKey(account_email))
+                                {
+                                    if (account_offers_done[account_email].Contains(product_id))
+                                    {
+
+                                    }
+                                    else
+                                    {
+                                        account_offers_done[account_email].Add(product_id);
+                                    }
+                                }
+                                else
+                                {
+                                    account_offers_done[account_email] = new List<string> { product_id };
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        if (settings.dont_make_order)
+                        {
+
+                            if (settings.add_views)
+                            {
+                                var trd2 = new Thread(() => back.ViewProcess(product_url, JsonConvert.SerializeObject(cookie), use_proxies.Checked));
+                                trd2.Start();
+                                threads.Add(trd2);
+                            }
+                            if (settings.add_to_basket)
+                            {
+                                var trd2 = new Thread(() => back.AddToBasketProcess(product_url, JsonConvert.SerializeObject(cookie), use_proxies.Checked));
+                                trd2.Start();
+                                threads.Add(trd2);
+                            }
+                            if (settings.favorite_offer)
+                            {
+                                var trd1 = new Thread(() => back.FavouriteProcess(product_url, JsonConvert.SerializeObject(cookie), use_proxies.Checked));
+                                trd1.Start();
+                                threads.Add(trd1);
+                            }
+                        }
+                        else
+                        {
+
+                            if (settings.add_views)
+                            {
+                                var trd2 = new Thread(() => back.ViewProcess(product_url, JsonConvert.SerializeObject(cookie), use_proxies.Checked));
+                                trd2.Start();
+                                threads.Add(trd2);
+                            }
+                            if (settings.add_to_basket)
+                            {
+                                var trd2 = new Thread(() => back.AddToBasketProcess(product_url, JsonConvert.SerializeObject(cookie), use_proxies.Checked));
+                                trd2.Start();
+                                threads.Add(trd2);
+                            }
+                            if (settings.favorite_offer)
+                            {
+                                var trd1 = new Thread(() => back.FavouriteProcess(product_url, JsonConvert.SerializeObject(cookie), use_proxies.Checked));
+                                trd1.Start();
+                                threads.Add(trd1);
+                            }
+                            var trd = new Thread(() => back.UnpaidOrderProcess(product_url, JsonConvert.SerializeObject(cookie), use_proxies.Checked, delivery_method, apt.Checked));
+                            //back.UnpaidOrderProcess(product_url, JsonConvert.SerializeObject(cookie), use_proxies.Checked, delivery_method, apt.Checked);
+                            trd.Start();
+                            threads.Add(trd);
+                            if (account_offers_done.ContainsKey(account_email))
+                            {
+                                if (account_offers_done[account_email].Contains(product_id))
+                                {
+
+                                }
+                                else
+                                {
+                                    account_offers_done[account_email].Add(product_id);
+                                }
+                            }
+                            else
+                            {
+                                account_offers_done[account_email] = new List<string> { product_id };
+
                             }
                         }
 
                     }
                 }
-            } else
+            }
+            else
             {
                 foreach (var cookie in cookies)
                 {
                     Console.Title = $"Account index: {n}";
                     ++n;
-                    if (cookie.qeppo_login2 != null)
+                    var account_email = cookie.QXLSESSID;
+                    if (use_intervals.Checked)
                     {
-                        var account_email = JsonConvert.DeserializeObject<QeppoLogin2>(System.Web.HttpUtility.UrlDecode(cookie.qeppo_login2)).username;
-                        if (use_intervals.Checked)
+                        if (rand_intervals.Checked)
                         {
-                            if (rand_intervals.Checked)
+                            if (settings.dont_make_order)
                             {
-                                if (settings.dont_make_order)
+                                Thread.Sleep(GetIntervalValue());
+
+                                if (settings.add_views)
                                 {
-                                    Thread.Sleep(GetIntervalValue());
-                                    
-                                    if (settings.add_views)
-                                    {
-                                        back.ViewProcess(product_url, JsonConvert.SerializeObject(cookie), use_proxies.Checked);
-                                    }
-                                    if (settings.add_to_basket)
-                                    {
-                                        back.AddToBasketProcess(product_url, JsonConvert.SerializeObject(cookie), use_proxies.Checked);
-                                    }
-                                    if (settings.favorite_offer)
-                                    {
-                                        back.FavouriteProcess(product_url, JsonConvert.SerializeObject(cookie), use_proxies.Checked);
-                                    }
+                                    back.ViewProcess(product_url, JsonConvert.SerializeObject(cookie), use_proxies.Checked);
                                 }
-                                else
+                                if (settings.add_to_basket)
                                 {
-                                    Thread.Sleep(GetIntervalValue());
-                                    
-                                    if (settings.add_views)
-                                    {
-                                        back.ViewProcess(product_url, JsonConvert.SerializeObject(cookie), use_proxies.Checked);
-                                    }
-                                    if (settings.add_to_basket)
-                                    {
-                                        back.AddToBasketProcess(product_url, JsonConvert.SerializeObject(cookie), use_proxies.Checked);
-                                    }
-                                    if (settings.favorite_offer)
-                                    {
-                                        back.FavouriteProcess(product_url, JsonConvert.SerializeObject(cookie), use_proxies.Checked);
-                                    }
-                                    back.UnpaidOrderProcess(product_url, JsonConvert.SerializeObject(cookie), use_proxies.Checked, settings.delivery_method, apt.Checked);
-                                    if (account_offers_done.ContainsKey(account_email))
-                                    {
-                                        if (account_offers_done[account_email].Contains(product_id))
-                                        {
-
-                                        }
-                                        else
-                                        {
-                                            account_offers_done[account_email].Add(product_id);
-                                        }
-                                    }
-                                    else
-                                    {
-                                        account_offers_done[account_email] = new List<string> { product_id };
-
-                                    }
+                                    back.AddToBasketProcess(product_url, JsonConvert.SerializeObject(cookie), use_proxies.Checked);
+                                }
+                                if (settings.favorite_offer)
+                                {
+                                    back.FavouriteProcess(product_url, JsonConvert.SerializeObject(cookie), use_proxies.Checked);
                                 }
                             }
                             else
                             {
-                                if (settings.dont_make_order)
-                                {
-                                    Thread.Sleep(Int32.Parse(interval_time.Text));
-                                    
-                                    if (settings.add_views)
-                                    {
-                                        back.ViewProcess(product_url, JsonConvert.SerializeObject(cookie), use_proxies.Checked);
-                                    }
-                                    if (settings.add_to_basket)
-                                    {
-                                        back.AddToBasketProcess(product_url, JsonConvert.SerializeObject(cookie), use_proxies.Checked);
-                                    }
-                                    if (settings.favorite_offer)
-                                    {
-                                        back.FavouriteProcess(product_url, JsonConvert.SerializeObject(cookie), use_proxies.Checked);
-                                    }
+                                Thread.Sleep(GetIntervalValue());
 
+                                if (settings.add_views)
+                                {
+                                    back.ViewProcess(product_url, JsonConvert.SerializeObject(cookie), use_proxies.Checked);
                                 }
-                                else
+                                if (settings.add_to_basket)
                                 {
-                                    Thread.Sleep(Int32.Parse(interval_time.Text));
-                                    
-                                    if (settings.add_views)
+                                    back.AddToBasketProcess(product_url, JsonConvert.SerializeObject(cookie), use_proxies.Checked);
+                                }
+                                if (settings.favorite_offer)
+                                {
+                                    back.FavouriteProcess(product_url, JsonConvert.SerializeObject(cookie), use_proxies.Checked);
+                                }
+                                back.UnpaidOrderProcess(product_url, JsonConvert.SerializeObject(cookie), use_proxies.Checked, settings.delivery_method, apt.Checked);
+                                if (account_offers_done.ContainsKey(account_email))
+                                {
+                                    if (account_offers_done[account_email].Contains(product_id))
                                     {
-                                        back.ViewProcess(product_url, JsonConvert.SerializeObject(cookie), use_proxies.Checked);
-                                    }
-                                    if (settings.add_to_basket)
-                                    {
-                                        back.AddToBasketProcess(product_url, JsonConvert.SerializeObject(cookie), use_proxies.Checked);
-                                    }
-                                    if (settings.favorite_offer)
-                                    {
-                                        back.FavouriteProcess(product_url, JsonConvert.SerializeObject(cookie), use_proxies.Checked);
-                                    }
-                                    back.UnpaidOrderProcess(product_url, JsonConvert.SerializeObject(cookie), use_proxies.Checked, settings.delivery_method, apt.Checked);
-                                    if (account_offers_done.ContainsKey(account_email))
-                                    {
-                                        if (account_offers_done[account_email].Contains(product_id))
-                                        {
 
-                                        }
-                                        else
-                                        {
-                                            account_offers_done[account_email].Add(product_id);
-                                        }
                                     }
                                     else
                                     {
-                                        account_offers_done[account_email] = new List<string> { product_id };
+                                        account_offers_done[account_email].Add(product_id);
                                     }
+                                }
+                                else
+                                {
+                                    account_offers_done[account_email] = new List<string> { product_id };
+
                                 }
                             }
                         }
@@ -392,50 +336,39 @@ namespace Allegro_bot_gui
                         {
                             if (settings.dont_make_order)
                             {
-                                
+                                Thread.Sleep(Int32.Parse(interval_time.Text));
+
                                 if (settings.add_views)
                                 {
-                                    var trd2 = new Thread(() => back.ViewProcess(product_url, JsonConvert.SerializeObject(cookie), use_proxies.Checked));
-                                    trd2.Start();
-                                    threads.Add(trd2);
+                                    back.ViewProcess(product_url, JsonConvert.SerializeObject(cookie), use_proxies.Checked);
                                 }
                                 if (settings.add_to_basket)
                                 {
-                                    var trd2 = new Thread(() => back.AddToBasketProcess(product_url, JsonConvert.SerializeObject(cookie), use_proxies.Checked));
-                                    trd2.Start();
-                                    threads.Add(trd2);
+                                    back.AddToBasketProcess(product_url, JsonConvert.SerializeObject(cookie), use_proxies.Checked);
                                 }
                                 if (settings.favorite_offer)
                                 {
-                                    var trd1 = new Thread(() => back.FavouriteProcess(product_url, JsonConvert.SerializeObject(cookie), use_proxies.Checked));
-                                    trd1.Start();
-                                    threads.Add(trd1);
+                                    back.FavouriteProcess(product_url, JsonConvert.SerializeObject(cookie), use_proxies.Checked);
                                 }
+
                             }
                             else
                             {
-                                
+                                Thread.Sleep(Int32.Parse(interval_time.Text));
+
                                 if (settings.add_views)
                                 {
-                                    var trd2 = new Thread(() => back.ViewProcess(product_url, JsonConvert.SerializeObject(cookie), use_proxies.Checked));
-                                    trd2.Start();
-                                    threads.Add(trd2);
+                                    back.ViewProcess(product_url, JsonConvert.SerializeObject(cookie), use_proxies.Checked);
                                 }
                                 if (settings.add_to_basket)
                                 {
-                                    var trd2 = new Thread(() => back.AddToBasketProcess(product_url, JsonConvert.SerializeObject(cookie), use_proxies.Checked));
-                                    trd2.Start();
-                                    threads.Add(trd2);
+                                    back.AddToBasketProcess(product_url, JsonConvert.SerializeObject(cookie), use_proxies.Checked);
                                 }
                                 if (settings.favorite_offer)
                                 {
-                                    var trd1 = new Thread(() => back.FavouriteProcess(product_url, JsonConvert.SerializeObject(cookie), use_proxies.Checked));
-                                    trd1.Start();
-                                    threads.Add(trd1);
+                                    back.FavouriteProcess(product_url, JsonConvert.SerializeObject(cookie), use_proxies.Checked);
                                 }
-                                var trd = new Thread(() => back.UnpaidOrderProcess(product_url, JsonConvert.SerializeObject(cookie), use_proxies.Checked, settings.delivery_method, apt.Checked));
-                                trd.Start();
-                                threads.Add(trd);
+                                back.UnpaidOrderProcess(product_url, JsonConvert.SerializeObject(cookie), use_proxies.Checked, settings.delivery_method, apt.Checked);
                                 if (account_offers_done.ContainsKey(account_email))
                                 {
                                     if (account_offers_done[account_email].Contains(product_id))
@@ -453,7 +386,72 @@ namespace Allegro_bot_gui
                                 }
                             }
                         }
+                    }
+                    else
+                    {
+                        if (settings.dont_make_order)
+                        {
 
+                            if (settings.add_views)
+                            {
+                                var trd2 = new Thread(() => back.ViewProcess(product_url, JsonConvert.SerializeObject(cookie), use_proxies.Checked));
+                                trd2.Start();
+                                threads.Add(trd2);
+                            }
+                            if (settings.add_to_basket)
+                            {
+                                var trd2 = new Thread(() => back.AddToBasketProcess(product_url, JsonConvert.SerializeObject(cookie), use_proxies.Checked));
+                                trd2.Start();
+                                threads.Add(trd2);
+                            }
+                            if (settings.favorite_offer)
+                            {
+                                var trd1 = new Thread(() => back.FavouriteProcess(product_url, JsonConvert.SerializeObject(cookie), use_proxies.Checked));
+                                trd1.Start();
+                                threads.Add(trd1);
+                            }
+                        }
+                        else
+                        {
+
+                            if (settings.add_views)
+                            {
+                                var trd2 = new Thread(() => back.ViewProcess(product_url, JsonConvert.SerializeObject(cookie), use_proxies.Checked));
+                                trd2.Start();
+                                threads.Add(trd2);
+                            }
+                            if (settings.add_to_basket)
+                            {
+                                var trd2 = new Thread(() => back.AddToBasketProcess(product_url, JsonConvert.SerializeObject(cookie), use_proxies.Checked));
+                                trd2.Start();
+                                threads.Add(trd2);
+                            }
+                            if (settings.favorite_offer)
+                            {
+                                var trd1 = new Thread(() => back.FavouriteProcess(product_url, JsonConvert.SerializeObject(cookie), use_proxies.Checked));
+                                trd1.Start();
+                                threads.Add(trd1);
+                            }
+                            var trd = new Thread(() => back.UnpaidOrderProcess(product_url, JsonConvert.SerializeObject(cookie), use_proxies.Checked, settings.delivery_method, apt.Checked));
+                            //back.UnpaidOrderProcess(product_url, JsonConvert.SerializeObject(cookie), use_proxies.Checked, settings.delivery_method, apt.Checked);
+                            trd.Start();
+                            threads.Add(trd);
+                            if (account_offers_done.ContainsKey(account_email))
+                            {
+                                if (account_offers_done[account_email].Contains(product_id))
+                                {
+
+                                }
+                                else
+                                {
+                                    account_offers_done[account_email].Add(product_id);
+                                }
+                            }
+                            else
+                            {
+                                account_offers_done[account_email] = new List<string> { product_id };
+                            }
+                        }
                     }
                 }
             }
@@ -468,7 +466,7 @@ namespace Allegro_bot_gui
         public async Task ProcessHandler(CookieModel[] cookies)
         {
             string[] products = File.ReadAllLines("./Data/products_unpaid.txt");
-            foreach(var product in products)
+            foreach (var product in products)
             {
                 ProcessStart(product, cookies);
             }
@@ -489,7 +487,7 @@ namespace Allegro_bot_gui
                         if (settings.dont_make_order)
                         {
                             Thread.Sleep(GetIntervalValue());
-                            
+
                             if (settings.add_views)
                             {
                                 back.ViewProcess(product_url, JsonConvert.SerializeObject(cookie), use_proxies.Checked);
@@ -506,7 +504,7 @@ namespace Allegro_bot_gui
                         else
                         {
                             Thread.Sleep(GetIntervalValue());
-                            
+
                             if (settings.add_views)
                             {
                                 back.ViewProcess(product_url, JsonConvert.SerializeObject(cookie), use_proxies.Checked);
@@ -543,7 +541,7 @@ namespace Allegro_bot_gui
                         if (settings.dont_make_order)
                         {
                             Thread.Sleep(Int32.Parse(interval_time.Text));
-                            
+
                             if (settings.add_views)
                             {
                                 back.ViewProcess(product_url, JsonConvert.SerializeObject(cookie), use_proxies.Checked);
@@ -561,7 +559,7 @@ namespace Allegro_bot_gui
                         else
                         {
                             Thread.Sleep(Int32.Parse(interval_time.Text));
-                            
+
                             if (settings.add_views)
                             {
                                 back.ViewProcess(product_url, JsonConvert.SerializeObject(cookie), use_proxies.Checked);
@@ -597,7 +595,7 @@ namespace Allegro_bot_gui
                 {
                     if (settings.dont_make_order)
                     {
-                        
+
                         if (settings.add_views)
                         {
                             var trd2 = new Thread(() => back.ViewProcess(product_url, JsonConvert.SerializeObject(cookie), use_proxies.Checked));
@@ -619,7 +617,7 @@ namespace Allegro_bot_gui
                     }
                     else
                     {
-                        
+
                         if (settings.add_views)
                         {
                             var trd2 = new Thread(() => back.ViewProcess(product_url, JsonConvert.SerializeObject(cookie), use_proxies.Checked));
@@ -666,7 +664,7 @@ namespace Allegro_bot_gui
                         if (settings.dont_make_order)
                         {
                             Thread.Sleep(GetIntervalValue());
-                            
+
                             if (settings.add_views)
                             {
                                 back.ViewProcess(product_url, JsonConvert.SerializeObject(cookie), use_proxies.Checked);
@@ -683,7 +681,7 @@ namespace Allegro_bot_gui
                         else
                         {
                             Thread.Sleep(GetIntervalValue());
-                            
+
                             if (settings.add_views)
                             {
                                 back.ViewProcess(product_url, JsonConvert.SerializeObject(cookie), use_proxies.Checked);
@@ -720,7 +718,7 @@ namespace Allegro_bot_gui
                         if (settings.dont_make_order)
                         {
                             Thread.Sleep(Int32.Parse(interval_time.Text));
-                            
+
                             if (settings.add_views)
                             {
                                 back.ViewProcess(product_url, JsonConvert.SerializeObject(cookie), use_proxies.Checked);
@@ -738,7 +736,7 @@ namespace Allegro_bot_gui
                         else
                         {
                             Thread.Sleep(Int32.Parse(interval_time.Text));
-                            
+
                             if (settings.add_views)
                             {
                                 back.ViewProcess(product_url, JsonConvert.SerializeObject(cookie), use_proxies.Checked);
@@ -774,7 +772,7 @@ namespace Allegro_bot_gui
                 {
                     if (settings.dont_make_order)
                     {
-                        
+
                         if (settings.add_views)
                         {
                             var trd2 = new Thread(() => back.ViewProcess(product_url, JsonConvert.SerializeObject(cookie), use_proxies.Checked));
@@ -796,7 +794,7 @@ namespace Allegro_bot_gui
                     }
                     else
                     {
-                        
+
                         if (settings.add_views)
                         {
                             var trd2 = new Thread(() => back.ViewProcess(product_url, JsonConvert.SerializeObject(cookie), use_proxies.Checked));
@@ -837,7 +835,7 @@ namespace Allegro_bot_gui
         }
         public List<CookieModel> Get_accounts_account_rotation()
         {
-            
+
             var accounts = new List<CookieModel>();
             CookieModel[] cookies = JsonConvert.DeserializeObject<List<CookieModel>>(File.ReadAllText("./BotData/accounts_unpaid.json")).ToArray();
             foreach (var cookie in cookies)
@@ -849,9 +847,10 @@ namespace Allegro_bot_gui
                     {
                         accounts.Add(cookie);
                     }
-                } else
+                }
+                else
                 {
-                    
+
                     accounts.Add(cookie);
                 }
             }
@@ -862,9 +861,9 @@ namespace Allegro_bot_gui
             SettingsUnpaidOrders settings = JsonConvert.DeserializeObject<SettingsUnpaidOrders>(File.ReadAllText("./BotData/settings_unpaid.json"));
             CookieModel[] cookies = JsonConvert.DeserializeObject<List<CookieModel>>(File.ReadAllText("./BotData/accounts_unpaid.json")).ToArray();
             Dictionary<string, int> usernames_limit = JsonConvert.DeserializeObject<Dictionary<string, int>>(File.ReadAllText("./BotData/accounts_username_limit.json"));
-            
+
             var i = 0;
-            foreach(var cookie in cookies)
+            foreach (var cookie in cookies)
             {
                 if (i == usernames_limit["accounts_limit"])
                 {
@@ -874,14 +873,15 @@ namespace Allegro_bot_gui
                 if (settings.change_nicknames_old_method)
                 {
                     back.NicknameChange(qeppologin2.id.ToString(), JsonConvert.SerializeObject(cookie), true, qeppologin2.username.Split(new string[] { "@" }, StringSplitOptions.None)[0]);
-                } else
+                }
+                else
                 {
                     back.NicknameChange(qeppologin2.id.ToString(), JsonConvert.SerializeObject(cookie), false);
                 }
-                
-                
+
+
             }
-        } 
+        }
         public async Task OfferRotationHandler(CookieModel[] cookies)
         {
             string[] products = File.ReadAllLines("./Data/products_unpaid.txt");
@@ -904,7 +904,8 @@ namespace Allegro_bot_gui
             SettingsUnpaidOrders settings = JsonConvert.DeserializeObject<SettingsUnpaidOrders>(File.ReadAllText("./BotData/settings_unpaid.json"));
             if (settings.change_nicknames)
             {
-                new Thread(() => {
+                new Thread(() =>
+                {
                     ChangeUsernames();
                 }).Start();
             }
@@ -913,18 +914,22 @@ namespace Allegro_bot_gui
                 if (account_rotation_checkbox.Checked)
                 {
                     new Thread(() => ProcessHandler(Get_accounts_account_rotation().ToArray())).Start();
-                } else
+                }
+                else
                 {
                     CookieModel[] cookies = JsonConvert.DeserializeObject<List<CookieModel>>(File.ReadAllText("./BotData/accounts_unpaid.json")).ToArray();
+                    //ProcessHandler(cookies);
                     new Thread(() => ProcessHandler(cookies)).Start();
                 }
-            } else
+            }
+            else
             {
                 if (account_rotation_checkbox.Checked)
                 {
                     var accounts = Get_accounts_account_rotation().ToArray();
                     new Thread(() => OfferRotationHandler(accounts)).Start();
-                } else
+                }
+                else
                 {
                     CookieModel[] cookies = JsonConvert.DeserializeObject<List<CookieModel>>(File.ReadAllText("./BotData/accounts_unpaid.json")).ToArray();
                     new Thread(() => OfferRotationHandler(cookies)).Start();
@@ -956,7 +961,7 @@ namespace Allegro_bot_gui
 
         private void button2_Click(object sender, EventArgs e)
         {
-            new SettingsForm().Show();  
+            new SettingsForm().Show();
         }
 
         private void button3_Click(object sender, EventArgs e)

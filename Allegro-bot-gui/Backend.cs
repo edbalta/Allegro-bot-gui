@@ -100,6 +100,7 @@ namespace Allegro_bot_gui
 
         public void UnpaidOrderProcess(string product_id, string cookie, bool use_proxy, string delivery_method, bool apt)
         {
+            //unpaid_backend.CreateUnpaidOrder(product_id, cookie, null, delivery_method, apt);
             new Thread(() => unpaid_backend.CreateUnpaidOrder(product_id, cookie, null, delivery_method, apt)).Start();
         }
         public void UnpaidOrderProcessSync(string product_id, string cookie, bool use_proxy, string delivery_method, bool apt)

@@ -16,5 +16,6 @@ namespace Allegro_bot_gui
         public string userIdentity;
         public string wdctx;
         public string ws3;
+        public string datadome;
     }
 }
