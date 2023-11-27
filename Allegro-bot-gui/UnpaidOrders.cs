@@ -1,18 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.IO;
 using Newtonsoft.Json;
 using Microsoft.Toolkit.Uwp.Notifications;
 using System.Threading;
-using Leaf.xNet;
-using System.Runtime.InteropServices;
 using System.Diagnostics;
 
 namespace Allegro_bot_gui
@@ -77,6 +71,7 @@ namespace Allegro_bot_gui
         }
         public void ProcessStart(string product_url, CookieModel[] cookies)
         {
+            //var result = new BrowserFetcher().DownloadAsync().Result;
             var product_id = GetProductID(product_url);
             SettingsUnpaidOrders settings = JsonConvert.DeserializeObject<SettingsUnpaidOrders>(File.ReadAllText("./BotData/settings_unpaid.json"));
             var n = 0;
@@ -87,7 +82,8 @@ namespace Allegro_bot_gui
                     Console.Title = $"Account index: {n}";
                     ++n;
                     var delivery_method = GetDeliveryMethod(model);
-                    var account_email = JsonConvert.DeserializeObject<QeppoLogin2>(System.Web.HttpUtility.UrlDecode(cookie.qeppo_login2)).username;
+                    var account_email = cookie.QXLSESSID;
+                    //var account_email = cookie.ToString JsonConvert.DeserializeObject<QeppoLogin2>(System.Web.HttpUtility.UrlDecode(cookie.qeppo_login2)).username;
                     if (use_intervals.Checked)
                     {
                         if (rand_intervals.Checked)
@@ -394,6 +390,7 @@ namespace Allegro_bot_gui
 
                             if (settings.add_views)
                             {
+                                //back.ViewProcess(product_url, JsonConvert.SerializeObject(cookie), use_proxies.Checked);
                                 var trd2 = new Thread(() => back.ViewProcess(product_url, JsonConvert.SerializeObject(cookie), use_proxies.Checked));
                                 trd2.Start();
                                 threads.Add(trd2);
@@ -475,7 +472,8 @@ namespace Allegro_bot_gui
         {
             SettingsUnpaidOrders settings = JsonConvert.DeserializeObject<SettingsUnpaidOrders>(File.ReadAllText("./BotData/settings_unpaid.json"));
             DeliverySelectorModel model = JsonConvert.DeserializeObject<DeliverySelectorModel>(File.ReadAllText("./BotData/accounts_unpaid_delivery.json"));
-            var account_email = JsonConvert.DeserializeObject<QeppoLogin2>(System.Web.HttpUtility.UrlDecode(cookie.qeppo_login2)).username;
+            //var account_email = JsonConvert.DeserializeObject<QeppoLogin2>(System.Web.HttpUtility.UrlDecode(cookie.qeppo_login2)).username;
+            var account_email = cookie.QXLSESSID;
             var product_id = GetProductID(product_url);
             if (settings.delivery_method == "Use ALL")
             {

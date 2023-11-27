@@ -83,6 +83,14 @@ namespace Allegro_bot_gui
                         if (delivery_method == "Paczkomaty InPost")
                         {
                             json_obj.deliveries[0].delivery.generalDelivery.pointDetails = GetGeneralDeliveryPoint(json_obj.deliveries[0].options.deliveryItems.items[0].items);
+                            if(json_obj.deliveries[0].delivery.generalDelivery.pointDetails == null)
+                            {
+                                mprint.FPrint($"Account doesn't have Pickup Point nearby {account_email}");
+                                suspended_accounts.Add(account_email);
+                                File.WriteAllText("./logs/suspended_accounts.json", JsonConvert.SerializeObject(suspended_accounts));
+
+                                return null;
+                            }
                         }
                         else
                         {
@@ -90,11 +98,11 @@ namespace Allegro_bot_gui
                         }
                         string payment_id = SendPurchaseRequest(purchase_id, json_obj, cookie);
 
-                        //var buyerId = (string)json_obj.buyer.id;
+                        var buyerId = (string)json_obj.buyer.id;
                         if (payment_id != null)
                         {
                             mprint.SPrint($"(70%) Added delivery method. Account: {account_email}");
-                            //UpdateUser(buyerId, addy, name, num, cookie);
+                            UpdateUser(buyerId, addy, name, num, cookie);
                             FinishRequests(payment_id, purchase_id, cookie, product_id, account_email);
                         }
                         else

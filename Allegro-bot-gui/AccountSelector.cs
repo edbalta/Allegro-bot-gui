@@ -4,6 +4,7 @@ using System.Windows.Forms;
 using System.Web;
 using System.IO;
 using Newtonsoft.Json;
+using System.Linq;
 
 
 namespace Allegro_bot_gui
@@ -21,11 +22,14 @@ namespace Allegro_bot_gui
         {
             CookieModel[] cookies = JsonConvert.DeserializeObject<List<CookieModel>>(File.ReadAllText("./Data/accounts.json")).ToArray();
             List<CookieModel> cookies_unpaid = new List<CookieModel>();
+            List<string> selectedFields = checkedListBox1.CheckedItems.OfType<string>().ToList();
+
             foreach (var cookie in cookies)
             {
-                var email = cookie.userIdentity;
+                var email = cookie.QXLSESSID;
                 var account_email = email;
-                if (checkedListBox1.CheckedItems.Contains(account_email))
+
+                if (selectedFields.Any(x => x.StartsWith(account_email)))
                 {
                     cookies_unpaid.Add(cookie);
                 }
