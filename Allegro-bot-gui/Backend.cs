@@ -18,6 +18,39 @@ namespace Allegro_bot_gui
         public Utils utility = new Utils();
         public ReviewScrapper scrapper2 = new ReviewScrapper();
         public UnpaidModuleBackend unpaid_backend = new UnpaidModuleBackend();
+        public string GetUserId(string cookie)
+        {
+            using (var client = new HttpRequest())
+            {
+                client.UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:108.0) Gecko/20100101 Firefox/108.0";
+                client.AddHeader("Accept", "application/vnd.allegro.internal.v1+json");
+                client.AddHeader("Accept-Language", "en-US");
+                client.AddHeader("Accept-Encoding", "gzip, deflate, br");
+                client.AddHeader("Referer", "https://allegro.pl/");
+                client.AddHeader("Origin", "https://allegro.pl");
+                client.AddHeader("Connection", "keep-alive");
+                client.AddHeader("Sec-Fetch-Dest", "empty");
+                client.AddHeader("Cookie", utility.ConvertCookieString(cookie));
+                client.AddHeader("Sec-Fetch-Mode", "cors");
+                client.AddHeader("Sec-Fetch-Site", "same-site");
+                client.AddHeader("TE", "trailers");
+                client.IgnoreProtocolErrors = true;
+                var response = client.Get("https://edge.allegro.pl/cart");
+
+                if (response.StatusCode == HttpStatusCode.OK)
+                {
+                    dynamic data = JsonConvert.DeserializeObject(response.ToString());
+                    if (data == null || data.id == null)
+                    {
+                        mprint.FPrint($"Can't get User Id to change username");
+                        return null;
+                    }
+                    var userId = data.id;
+                    return userId;
+                }
+                return null;
+            }
+        }
         static string GenerateUsername(List<string> words)
         {
             Random random = new Random();
