@@ -6,7 +6,6 @@ using Newtonsoft.Json;
 using System.Threading;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Web.Hosting;
 
 namespace Allegro_bot_gui
 {
@@ -143,42 +142,90 @@ namespace Allegro_bot_gui
 
         public void NicknameChange(string userId, string cookie, bool oldMethod, string nickname = null)
         {
-        using (var request = new HttpRequest())
-        {
+            var proxy = proxies[random.Next(proxies.Length)];
+            //OptionsNicknameChange(userId, cookie, proxy);
+            using (var request = new HttpRequest())
+            {
                 request.AddHeader("Accept", "application/vnd.allegro.public.v1+json");
                 request.AddHeader("Content-Type", "application/vnd.allegro.public.v1+json");
+                request.AddHeader("Accept-Language", "en-US");
+                request.UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.6045.159 Safari/537.36";
                 request.AddHeader("Cookie", utility.ConvertCookieString(cookie));
+                request.AddHeader("Sec-Fetch-Dest", "empty");
+                request.AddHeader("Sec-Fetch-Mode", "cors");
+                request.AddHeader("Sec-Fetch-Site", "same-site");
+                request.AddHeader("Sec-Ch-Ua-Mobile", "?0");
+                request.AddHeader("Referer", "https://allegro.pl/");
+                request.AddHeader("Accept-Encoding", "gzip, deflate, br");
+                //request.Proxy = ProxyClient.Parse(proxy);
                 request.IgnoreProtocolErrors = true;
+
                 string username = "";
                 if (oldMethod)
                 {
                     username = ModifyUsername(nickname);
-                } else
+                }
+                else
                 {
                     string[] words = File.ReadAllLines("./Data/nicknames.txt");
                     username = GenerateUsername(words.ToList());
                 }
                 var requestBody = new
-            {
-                accounts = new
                 {
-                    allegro = new
+                    accounts = new
                     {
-                        login = username
+                        allegro = new
+                        {
+                            login = username
+                        }
                     }
+                };
+                var reqBody = JsonConvert.SerializeObject(requestBody);
+                HttpResponse response = request.Put($"https://edge.allegro.pl/users/{userId}", reqBody, "application/vnd.allegro.public.v1+json");
+                if (((int)response.StatusCode) != 204) // LHS IS NOT EQUAL TO RHS AHAHHA
+                {
+                    mprint.FPrint($"Error: {response.ToString()}");
                 }
-            };
-                    HttpResponse response = request.Put($"https://edge.allegro.pl/users/{userId}", JsonConvert.SerializeObject(requestBody), "application/vnd.allegro.public.v1+json");
-                    if (((int)response.StatusCode) != 204) // LHS IS NOT EQUAL TO RHS AHAHHA
-                    {
-                        mprint.FPrint($"Error: {response.ToString()}");
-                    } else {
-                        mprint.SPrint($"Successfully changed username!");
-                    }
+                else
+                {
+                    mprint.SPrint($"Successfully changed username!");
+                }
+            }
         }
+        public void OptionsNicknameChange(string userId, string cookie, string proxy)
+        {
+            using (var request = new HttpRequest())
+            {
+                request.AddHeader("Content-Type", "application/vnd.allegro.public.v1+json");
+                request.AddHeader("Accept-Language", "en-US");
+                request.AddHeader("Origin", "https://allegro.pl");
+                request.AddHeader("Referer", "https://allegro.pl");
+                request.UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.6045.159 Safari/537.36";
+                //request.AddHeader("Cookie", utility.ConvertCookieString(cookie));
+                request.AddHeader("Sec-Fetch-Dest", "empty");
+                request.AddHeader("Sec-Fetch-Mode", "cors");
+                request.AddHeader("Sec-Fetch-Site", "same-site");
+                request.AddHeader("Access-Control-Request-Method", "PUT");
+                request.AddHeader("Access-Control-Request-Headers", "content-type");
+                request.AddHeader("Accept", "*/*");
+                request.AddHeader("Priority", "u=1, i");
+                request.AddHeader("Accept-Encoding", "gzip, deflate, br");
+                request.AddHeader("Accept-Language", "tr-TR,tr;q=0.9,en-US;q=0.8,en;q=0.7");
+                //request.IgnoreProtocolErrors = true;
+                request.Proxy = ProxyClient.Parse(proxy);
+                HttpResponse response = request.Options($"https://edge.allegro.pl/users/{userId}");
+                if (((int)response.StatusCode) != 204) // LHS IS NOT EQUAL TO RHS AHAHHA
+                {
+                    mprint.FPrint($"Error: {response.ToString()}");
+                }
+                else
+                {
+                    mprint.SPrint($"Successfully changed username options !");
+                }
+            }
         }
-
-    public void AddToBasketProcess(string productId, string cookie, bool use_proxy)
+        
+        public void AddToBasketProcess(string productId, string cookie, bool use_proxy)
         {
             try
             {
@@ -233,7 +280,9 @@ namespace Allegro_bot_gui
                         mprint.FPrint($"Failed to add offer to basket: {productId}, {resp.ToString()}, {resp.StatusCode}");
                     }
                 }
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 mprint.FPrint(ex.Message);
             }
         }
@@ -286,7 +335,7 @@ namespace Allegro_bot_gui
                 mprint.FPrint(ex.Message);
             }
         }
-        public void ViewProcess(string product_url, string cookie, bool use_proxy) 
+        public void ViewProcess(string product_url, string cookie, bool use_proxy)
         {
             string proxy = null;
             if (use_proxy)
@@ -313,7 +362,7 @@ namespace Allegro_bot_gui
             request.IgnoreProtocolErrors = true;
             var resp = request.Get(product_url);
             mprint.SPrint($"Added view on {product_url}.{resp.ToString()}");
-            request.Dispose();    
+            request.Dispose();
         }
         public async void DownProcess(string review_id, string cookie, bool use_proxy)
         {

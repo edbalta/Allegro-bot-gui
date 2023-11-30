@@ -867,17 +867,18 @@ namespace Allegro_bot_gui
                 {
                     break;
                 }
-                QeppoLogin2 qeppologin2 = JsonConvert.DeserializeObject<QeppoLogin2>(System.Web.HttpUtility.UrlDecode(cookie.qeppo_login2));
-                if (settings.change_nicknames_old_method)
-                {
-                    back.NicknameChange(qeppologin2.id.ToString(), JsonConvert.SerializeObject(cookie), true, qeppologin2.username.Split(new string[] { "@" }, StringSplitOptions.None)[0]);
-                }
-                else
-                {
-                    back.NicknameChange(qeppologin2.id.ToString(), JsonConvert.SerializeObject(cookie), false);
-                }
+                var serializedCookie = JsonConvert.SerializeObject(cookie);
+                var userId = back.GetUserId(serializedCookie);
+                back.NicknameChange(userId, serializedCookie, false);
+                //QeppoLogin2 qeppologin2 = JsonConvert.DeserializeObject<QeppoLogin2>(System.Web.HttpUtility.UrlDecode(cookie.qeppo_login2));
+                //if (settings.change_nicknames_old_method)
+                //{
+                //    back.NicknameChange(qeppologin2.id.ToString(), JsonConvert.SerializeObject(cookie), true, qeppologin2.username.Split(new string[] { "@" }, StringSplitOptions.None)[0]);
+                //}
+                //else
+                //{
 
-
+                //}
             }
         }
         public async Task OfferRotationHandler(CookieModel[] cookies)
